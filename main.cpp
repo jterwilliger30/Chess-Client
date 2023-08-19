@@ -1,5 +1,12 @@
+#include "NetworkInterface.hpp"
+
 int main(int argc, char *argv[])
 {
+    NetworkInterface intf;
+    intf.connectToServer("93.184.216.34", 80);
+
+
+    
     // Connect
     // If you're the first player
         // Server asks if you want to play PvP or AI
