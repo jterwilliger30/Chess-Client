@@ -2,25 +2,25 @@
 #include <iostream>
 
 #include <chrono>
-std::vector<char> m_buffer(20*1024);
-NetworkInterface::NetworkInterface()
+
+
+NetworkInterface::NetworkInterface() :
+    ep(nullptr),
+    sock(nullptr)
 {
     //m_buffer.reserve(20 * 1024);
 }
 
-void NetworkInterface::connectToServer(std::string ip_address, unsigned short port_num)
+void NetworkInterface::initSocket(std::string ip_address, unsigned short port_num)
 {
-    asio::error_code ec;
+    //  Asynchronous tools
+    //asio::io_context::work idleWork(context);
+    //std::thread thread_context = std::thread([&]() {context.run(); });
 
-    asio::io_context context;
-    asio::io_context::work idleWork(context);
-    std::thread thread_context = std::thread([&]() {context.run(); });
+    ep = std::make_unique<asio::ip::tcp::endpoint>(asio::ip::make_address(ip_address, ec), port_num);
+    sock = std::make_unique<asio::ip::tcp::socket>(context);
 
-    asio::ip::tcp::endpoint ep(asio::ip::make_address(ip_address, ec), port_num);
-
-    asio::ip::tcp::socket sock(context);
-
-    sock.connect(ep, ec);
+    sock->connect(*ep, ec);
 
     if (!ec)
     {
@@ -30,47 +30,48 @@ void NetworkInterface::connectToServer(std::string ip_address, unsigned short po
     {
         std::cout << "Failed to connect to address" << ec.message() << std::endl;
     }
+}
 
-    if (sock.is_open())
+void NetworkInterface::sendRequest(std::string sRequest)
+{
+    if (sock->is_open())
     {
-        
+        sock->write_some(asio::buffer(sRequest.data(), sRequest.size()), ec);
+    }
+}
 
-        std::string sRequest =
-            "GET /index.html HTTP/1.1\r\n"
-            "Host: example.com\r\n"
-            "Connection: close\r\n\r\n";
-
-        sock.write_some(asio::buffer(sRequest.data(), sRequest.size()), ec);
-
+std::string NetworkInterface::readResponse()
+{
+    std::vector<char> m_buffer(1024 * 10);
+    if (sock->is_open())
+        {
         size_t bytes = 0;
         while (bytes == 0)
         {
-            bytes = sock.available();
+            bytes = sock->available();
         }
 
-        sock.read_some(asio::buffer(m_buffer.data(), m_buffer.size()));
-        for (auto c : m_buffer)
-        {
-            std::cout << c;
-        }
-
-        std::string move = "  ";
-        while (!isalpha(move[0]) || !isdigit(move[1]))
-        {
-            std::cout << "\nYour move" << std::endl;
-            std::getline(std::cin, move);
-        }
-        
-        
+        sock->read_some(asio::buffer(m_buffer.data(), m_buffer.size()));
     }
 
-    
+    std::string response(m_buffer.begin(), m_buffer.end());
+    return response;
+}
 
-    
+std::string NetworkInterface::getMove()
+{
+    std::string move = "  ";
+    while (!isalpha(move[0]) || !isdigit(move[1]))
+    {
+        std::cout << "\nYour move" << std::endl;
+        std::getline(std::cin, move);
+    }
+
+    return move;
 }
 
 
-/* Async read... not desirable for our use case, since we want our calls to be blocking
+/*  Async read... not desirable for our use case, since we want our calls to be blocking
 void NetworkInterface::readSomeData(asio::ip::tcp::socket& sock)
 {
     sock.async_read_some(asio::buffer(m_buffer.data(), m_buffer.size()),
