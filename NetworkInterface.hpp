@@ -7,6 +7,7 @@ public:
 
     void initSocket(std::string ip_address, unsigned short port_num);
     void sendRequest(std::string sRequest);
+    void waitForResponse();
     std::string readResponse();
     std::string getMove();
 

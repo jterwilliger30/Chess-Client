@@ -4,16 +4,21 @@
 int main(int argc, char *argv[])
 {
     NetworkInterface intf; // Connect
-    intf.initSocket("93.184.216.34", 80);
+    intf.initSocket("127.0.0.1", 12819);
     intf.sendRequest(
             "GET /index.html HTTP/1.1\r\n"
             "Host: example.com\r\n"
             "Connection: close\r\n\r\n");
+    
 
-    std::cout << intf.readResponse();
-
-    std::string move = intf.getMove();
-    intf.sendRequest(move);
+    
+    while (true)
+    {
+        intf.waitForResponse();
+        std::cout << intf.readResponse() << std::endl;
+        std::string move = intf.getMove();
+        intf.sendRequest(move);
+    }
 
 
     

@@ -40,17 +40,23 @@ void NetworkInterface::sendRequest(std::string sRequest)
     }
 }
 
-std::string NetworkInterface::readResponse()
+void NetworkInterface::waitForResponse()
 {
-    std::vector<char> m_buffer(1024 * 10);
     if (sock->is_open())
-        {
+    {
         size_t bytes = 0;
         while (bytes == 0)
         {
             bytes = sock->available();
         }
+    }
+}
 
+std::string NetworkInterface::readResponse()
+{
+    std::vector<char> m_buffer(1024 * 10);
+    if (sock->is_open())
+    {
         sock->read_some(asio::buffer(m_buffer.data(), m_buffer.size()));
     }
 
