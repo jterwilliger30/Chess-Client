@@ -6,12 +6,35 @@ int main(int argc, char *argv[])
     NetworkInterface intf; // Connect
     //intf.initSocket("52.8.155.121", 12819);
     intf.initSocket("127.0.0.1", 12819);
-    intf.sendRequest("I want to play,a");
+    intf.sendRequest("I want to play,0");
     
+
+    intf.waitForResponse();
+
+    std::string response = intf.readResponse();
+
+    if (true) //(response == "p1 choice")
+    {
+        std::cout << "Type 0 for singleplayer or 1 to wait for a second player\n\t" << std::endl;
+
+        std::string choice;
+        std::getline(std::cin, choice);
+
+        intf.sendRequest(choice);
+    }
+    else if (response == "occupied")
+    {
+        // Handle case where player is not the first
+    }
+    else 
+    {
+        
+    }
+
     while (true)
     {
         intf.waitForResponse();
-        std::cout << intf.readResponse() << std::endl;
+        std::cout << intf.readResponse();
         std::string move = intf.getMove();
         intf.sendRequest(move);
     }

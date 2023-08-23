@@ -66,12 +66,9 @@ std::string NetworkInterface::readResponse()
 
 std::string NetworkInterface::getMove()
 {
-    std::string move = "  ";
-    while (!isalpha(move[0]) || !isdigit(move[1]))
-    {
-        std::cout << "\nYour move" << std::endl;
-        std::getline(std::cin, move);
-    }
+    std::string move;
+
+    std::getline(std::cin, move);
 
     return move;
 }
